@@ -1,0 +1,1 @@
+{"version":3,"file":"api-response.d.ts","sourceRoot":"","sources":["../../src/utils/api-response.ts"],"names":[],"mappings":"AAAA,cAAM,WAAW;IACf,UAAU,EAAE,MAAM,CAAA;IAClB,IAAI,EAAE,IAAI,CAAA;IACV,OAAO,EAAE,MAAM,CAAA;IACf,OAAO,EAAE,OAAO,CAAA;gBAEJ,UAAU,EAAE,MAAM,EAAE,IAAI,EAAE,GAAG,EAAE,OAAO,SAAY;CAM/D;AAED,OAAO,EAAE,WAAW,EAAE,CAAC"}
