@@ -10,7 +10,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }))
 app.use(express.json())
 app.use(cookieparser());
 
-app.use("/api/v1/healthcheck", Authentication)
+app.use("/api/v1/", Authentication)
 
 app.use((err: ApiError, req: express.Request, res: express.Response, next: express.NextFunction) => {
     const status = err.statusCode ?? 500

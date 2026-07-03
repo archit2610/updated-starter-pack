@@ -70,7 +70,7 @@ const registerUser = asyncHandler(async (req, res) => {
     subject: "Verify your email",
     mailgenContent: emailVerificationMailgenContent(
       username,
-      `/api/v1/healthcheck/verify/${unHashedToken}`
+      `/api/v1/verify/${unHashedToken}`
     ),
   });
 
@@ -123,8 +123,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
 
-  await updateUser(req.user!.id, { refreshToken: undefined })
-
+  try {
+    await updateUser(req.user!.id, { refreshToken: undefined })
+  } catch (err) {
+    console.log(err);
+  }
 
   res.status(200)
     .clearCookie("accessToken", options)
@@ -161,9 +164,8 @@ const verifyEmail = asyncHandler(async (req, res) => {
 });
 
 const resendEmailVerification = asyncHandler(async (req, res) => {
-  const { email, username } = req.body;
 
-  const user = await findUserByEmail(email);
+  const user = await findUserById(req.user!.id);
   if (!user) throw new ApiError(400, 'User not found')
 
   const { unHashedToken, hashedToken, tokenExpiry } = generateTemporaryToken()
@@ -172,6 +174,9 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     emailVerificationToken: hashedToken,
     emailVerificationExpiry: tokenExpiry,
   })
+
+  const email = user.email;
+  const username = user.username;
 
   await sendEmail({
     email,
@@ -222,6 +227,7 @@ const resetForgottenPassword = asyncHandler(async (req, res) => {
 
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
+
   const incomingRefreshToken = req.cookies?.refreshToken;
 
   if (!incomingRefreshToken) {
@@ -246,7 +252,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshoken", refreshToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
@@ -274,13 +280,14 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
 
   await sendEmail({
     email,
-    subject: "Verify your email",
+    subject: "Reset your password",
     mailgenContent: forgotPasswordMailgenContent(
       username,
-      `/api/v1/healthcheck/forgotpassword/${unHashedToken}`
+      `/api/v1/healthcheck/forgot-password/${unHashedToken}`
     ),
   });
 
+  res.status(200).json(new ApiResponse(200, {}, "Reset password link send on mail"))
 });
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
