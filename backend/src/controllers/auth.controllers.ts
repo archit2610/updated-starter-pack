@@ -16,7 +16,8 @@ import {
   generateAccessToken,
   generateRefreshToken,
   generateTemporaryToken,
-  hashPassword
+  hashPassword,
+  deleteuser
 } from '../services/user.js'
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -138,13 +139,15 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const verifyEmail = asyncHandler(async (req, res) => {
   const { token } = req.params;
-
+  console.log(token)
+  console.log("1")
   if (!token) {
     throw new ApiError(400, 'Invalid or Expiry token')
   }
-
+  console.log("2")
   const hashedtoken = crypto.createHash("sha256").update(token as string).digest("hex");
-
+  console.log(hashedtoken)
+  //console.log(users.emailVerificationToken)
   const [user] = await db
     .select()
     .from(users)
@@ -165,7 +168,11 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 const resendEmailVerification = asyncHandler(async (req, res) => {
 
-  const user = await findUserById(req.user!.id);
+  const { email } = req.body
+
+  if (!email) throw new ApiError(400, 'email not found')
+  const user = await findUserByEmail(email);
+
   if (!user) throw new ApiError(400, 'User not found')
 
   const { unHashedToken, hashedToken, tokenExpiry } = generateTemporaryToken()
@@ -174,8 +181,6 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     emailVerificationToken: hashedToken,
     emailVerificationExpiry: tokenExpiry,
   })
-
-  const email = user.email;
   const username = user.username;
 
   await sendEmail({
@@ -183,11 +188,11 @@ const resendEmailVerification = asyncHandler(async (req, res) => {
     subject: "Verify your email",
     mailgenContent: emailVerificationMailgenContent(
       username,
-      `/api/v1/healthcheck/verify/${unHashedToken}`
+      `/api/v1/verify/${unHashedToken}`
     ),
   });
 
-  res.status(200).json(new ApiResponse(200, {}, 'Verification email sent'))
+  res.status(200).json(new ApiResponse(200, { user }, 'Verification email sent'))
 });
 
 const resetForgottenPassword = asyncHandler(async (req, res) => {
@@ -312,6 +317,19 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, { user }, 'User fetched succesfully'))
 
 });
+
+export const deleteUser = asyncHandler(async (req, res) => {
+  const id = req.user!.id
+  if (!id) throw new ApiError(400, "error while deleteing")
+
+  const user = await deleteuser(id)
+  if (!user) throw new ApiError(400, "error while delteing ")
+
+  res.status(200).clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, { user }, "deleted succesfully"))
+
+})
 
 export {
   changeCurrentPassword,

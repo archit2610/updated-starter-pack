@@ -2,6 +2,7 @@ import express from "express";
 import cookieparser from "cookie-parser";
 import cors from "cors";
 import Authentication from "./routes/auth.routes.js";
+import Reports from "./routes/report.router.js";
 import { ApiError } from "./utils/api-error.js";
 
 const app = express();
@@ -11,6 +12,8 @@ app.use(express.json())
 app.use(cookieparser());
 
 app.use("/api/v1/", Authentication)
+app.use("/api/v1/auth/", Reports)
+
 
 app.use((err: ApiError, req: express.Request, res: express.Response, next: express.NextFunction) => {
     const status = err.statusCode ?? 500

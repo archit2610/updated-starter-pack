@@ -56,6 +56,7 @@ export const generateTemporaryToken = (): {
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {
     const [user] = await db.select().from(users).where(eq(users.email, email))
+    console.log(user);
     return user ?? null
 }
 
@@ -93,5 +94,13 @@ export const updateUser = async (
         throw new Error('User not found')
     }
 
+    return user
+}
+
+export const deleteuser = async (id: string): Promise<User> => {
+    const [user] = await db.delete(users).where(eq(users.id, id)).returning()
+    if (!user) {
+        throw new Error('User not found')
+    }
     return user
 }
