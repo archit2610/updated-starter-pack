@@ -20,11 +20,8 @@ export const users = pgTable('users', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
-export const reports = pgTable('reports', {
+export const blogs = pgTable('blogs', {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id').notNull().references(() => users.id),
-    question: text('question').notNull(),
-    subQuestions: jsonb('sub_questions').$type<string[]>(),
     reportMd: text('report_md'),
     citations: jsonb('citations').$type<{ url: string; title: string }[]>(),
     status: text('status').notNull().default('pending'), // pending | running | done | error
@@ -34,23 +31,6 @@ export const reports = pgTable('reports', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
-
-export const toolCalls = pgTable('tool_calls', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    reportId: uuid('report_id').notNull().references(() => reports.id),
-    stage: text('stage').notNull(),     // planner | searcher | reader | synthesizer
-    toolName: text('tool_name'),           // web_search | fetch_url | null
-    inputJson: jsonb('input_json'),
-    outputJson: jsonb('output_json'),
-    latencyMs: integer('latency_ms'),
-    inputTokens: integer('input_tokens'),
-    outputTokens: integer('output_tokens'),
-    costUsd: real('cost_usd'),
-    error: text('error'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-})
-
 export type NewUser = typeof users.$inferInsert
 export type User = typeof users.$inferSelect
-export type Report = typeof reports.$inferInsert
-export type ToolCalls = typeof toolCalls.$inferInsert   
+export type Report = typeof blogs.$inferInsert  
